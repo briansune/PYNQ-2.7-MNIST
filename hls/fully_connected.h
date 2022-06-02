@@ -1,7 +1,7 @@
 template <
 	int InCH,
 	int OutCH,
-	int UnRoll>
+	int UNROLL>
 void FC(
 	hls::stream<AXI_VAL> &stream_in,
 	hls::stream<AXI_VAL> &stream_out,
@@ -9,14 +9,16 @@ void FC(
 	const int output_rectify,
 	const int reduce)
 {
+
 	static NET_VAL A[InCH], B[OutCH][InCH];
 
 	AXI_VAL Inbuf, Outbuf;
 
 #pragma HLS BIND_STORAGE variable=A type=ram_2p impl=lutram
 #pragma HLS BIND_STORAGE variable=B type=ram_2p impl=bram
-#pragma HLS ARRAY_PARTITION variable=A block factor=InCH/16 dim=1
-#pragma HLS ARRAY_PARTITION variable=B block factor=InCH/16 dim=2
+
+#pragma HLS ARRAY_PARTITION variable=A dim=1 complete
+#pragma HLS ARRAY_PARTITION variable=B cyclic factor=UNROLL/2 dim=1
 
 	// first data showing mode.
 	// 0 - CNN forward propagation
@@ -65,9 +67,12 @@ void FC(
 	
 	// execute
 	else if (status == 0){
+
+		AXI_CAL buf = 0;
+
 		inference_top:
 		for (int num_img = 0; num_img < batch_size; num_img++){
-#pragma HLS loop_tripcount min = 1 max = InCH avg = InCH / 2
+#pragma HLS loop_tripcount min = 1 max = 4 avg = 2
 			
 			inference_din_InCH:
 			for (int i = 0; i < InCH; i++){
@@ -76,17 +81,20 @@ void FC(
 				A[i] = Inbuf;
 			}
 			
-			
+			inf_out_channel:
 			for (int i = 0; i < OutCH; i++){
-#pragma HLS UNROLL factor=UnRoll
+#pragma HLS UNROLL factor=UNROLL
 #pragma HLS loop_tripcount min = 1 max = OutCH avg = OutCH / 2
-				AXI_CAL buf = 0;
+				buf = 0;
+				inf_in_channel:
 				for (int j = 0; j < InCH; j++){
 #pragma HLS PIPELINE II=1
 					buf += A[j] * B[i][j];
 				}
+
 				buf = (output_rectify) ? MAX2(0, buf) : buf;
-				Outbuf = buf >> reduce;
+				buf >>= reduce;
+				Outbuf = buf;
 				stream_out.write(Outbuf);
 			}
 		}

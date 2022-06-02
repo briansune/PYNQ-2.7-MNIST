@@ -17,7 +17,7 @@ void cnn(
 
 	AXI_DMA_SLAVE(stream_in, connect_0);
 
-	FC<784, 128, 8>(connect_0, connect_1, 1, 1, 8);
+	FC<784, 128, 32>(connect_0, connect_1, 1, 1, 8);
 	
 	FC<128, 10, 10>(connect_1, connect_2, 2, 1, 0);
 
