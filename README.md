@@ -16,6 +16,11 @@ Test accuracy: 0.954
 
 ### Vivado Resource usage
 
-![image](https://user-images.githubusercontent.com/29487339/171523730-cde95564-b2ba-448d-911d-0a3c57674582.png)
-
+| LUT    | 7048 | 17600 | 40.045456 |
+|--------|------|-------|-----------|
+| LUTRAM | 415  | 6000  | 6.916667  |
+| FF     | 8055 | 35200 | 22.883522 |
+| BRAM   | 39   | 60    | 65.0      |
+| DSP    | 73   | 80    | 91.25     |
+| BUFG   | 1    | 32    | 3.125     |
 
