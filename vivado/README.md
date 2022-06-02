@@ -1,7 +1,7 @@
 # Top Vivado Block Design
 
-![Top](top_design.png)
+![Top](vivado/top_design.png)
 
 # Memory CNN Map Design
 
-![Top](memory.png)
+![Memory](vivado/memory.png)
