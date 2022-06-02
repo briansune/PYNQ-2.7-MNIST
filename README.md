@@ -4,9 +4,9 @@
 ![MNIST Layers](image/mnist_layers.png)
 
 ### Baseline of the above network
-Test loss: 0.2037487030029297
+Test loss: 0.204
 
-Test accuracy: 0.9563000202178955
+Test accuracy: 0.956
 
 ### Quantized MNIST network
 
