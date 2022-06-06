@@ -2,7 +2,7 @@ template <
 	int InCH,
 	int OutCH,
 	int UNROLL>
-void FC(
+void Fc(
 	hls::stream<AXI_VAL> &stream_in,
 	hls::stream<AXI_VAL> &stream_out,
 	const int layer_id,
@@ -92,7 +92,7 @@ void FC(
 					buf += A[j] * B[i][j];
 				}
 
-				buf = (output_rectify) ? MAX2(0, buf) : buf;
+				buf = (output_rectify) ? MAX(0, buf) : buf;
 				buf >>= reduce;
 				Outbuf = buf;
 				stream_out.write(Outbuf);

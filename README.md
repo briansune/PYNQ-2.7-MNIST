@@ -6,21 +6,21 @@
 ### Baseline of the above network
 Test loss: 0.204
 
-Test accuracy: 0.956
+Test accuracy: 97.64
 
 ### Quantized MNIST network
 
 Test loss: 0.206
 
-Test accuracy: 0.954
+Test accuracy: 96.73
 
 ### Vivado Resource usage
 
-| LUT    | 7048 | 17600 | 40.045456 |
+| LUT    | 6415 | 17600 | 36.448864 |
 |--------|------|-------|-----------|
-| LUTRAM | 415  | 6000  | 6.916667  |
-| FF     | 8055 | 35200 | 22.883522 |
-| BRAM   | 39   | 60    | 65.0      |
-| DSP    | 73   | 80    | 91.25     |
+| LUTRAM | 934  | 6000  | 15.566667 |
+| FF     | 6125 | 35200 | 17.400568 |
+| BRAM   | 27   | 60    | 45.0      |
+| DSP    | 47   | 80    | 58.749996 |
 | BUFG   | 1    | 32    | 3.125     |
 

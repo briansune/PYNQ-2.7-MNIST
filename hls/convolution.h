@@ -7,19 +7,20 @@ void Conv(
     hls::stream<AXI_VAL> &stream_in,
     hls::stream<AXI_VAL> &stream_out,
     const int layer_id,
-    const int output_rectify)
+    const int output_rectify,
+	const int reduce)
 {
 	// Raw dat of the previous layer
-    static NET_VAL A[InCH][InDim][InDim];
+    static NET_VAL A[InDim][InDim][InCH];
 
     // Weight of the convolution filters
-    static NET_VAL B[OutCH][InCH][KerDim][KerDim];
+    static NET_VAL B[OutCH][KerDim][KerDim][InCH];
 
 #pragma HLS BIND_STORAGE variable=A type=ram_2p impl=lutram
 #pragma HLS BIND_STORAGE variable=B type=ram_2p impl=lutram
 
-#pragma HLS ARRAY_PARTITION variable=A block factor=InDim dim=3
-#pragma HLS ARRAY_PARTITION variable=B block factor=KerDim dim=4
+#pragma HLS ARRAY_PARTITION variable=A dim=2 complete
+#pragma HLS ARRAY_PARTITION variable=B dim=3 complete
 
     AXI_VAL tmp_val;
 
@@ -58,14 +59,13 @@ void Conv(
     {
     	weight_load:
 		for (int i = 0; i < OutCH; i++)
-            for (int j = 0; j < InCH; j++)
-                for (int ka = 0; ka < KerDim; ka++)
-                    for (int kb = 0; kb < KerDim; kb++)
-                    {
+            for (int ka = 0; ka < KerDim; ka++)
+            	for (int kb = 0; kb < KerDim; kb++)
+            		for (int j = 0; j < InCH; j++){
 #pragma HLS PIPELINE II=1
                         tmp_val = stream_in.read();
-                        B[i][j][ka][kb] = ap_int<8>(tmp_val);
-                        stream_out.write(B[i][j][ka][kb]);
+                        B[i][ka][kb][j] = ap_int<8>(tmp_val);
+                        stream_out.write(B[i][ka][kb][j]);
                     }
     }
     else if (status == 0) // execute
@@ -85,37 +85,39 @@ void Conv(
                     {
 #pragma HLS PIPELINE II=1
                         tmp_val = stream_in.read();
-                        A[i][j][k] = tmp_val;
+                        A[j][k][i] = tmp_val;
                     }
                 }
 			}
 			// ============================================================================
-			AXI_VAL relu_cal;
 
-			inference_cal_l0:
-            for (int ia = 0; ia < InDim - (KerDim - 1); ia++)
-            {
-				inference_cal_l1:
-                for (int ib = 0; ib < InDim - (KerDim - 1); ib++)
-                {
-					inference_cal_l2:
-                    for (int i = 0; i < OutCH; i++)
-                    {
-                    	AXI_VAL buf = 0;
-                        inference_cal_l3:
-						for (int j = 0; j < InCH; j++)
-                        {
+			inference_kin_h:
+			for (int ia = 0; ia < InDim - (KerDim - 1); ia++)
+			{
+				inference_kin_w:
+				for (int ib = 0; ib < InDim - (KerDim - 1); ib++)
+				{
+					inference_out_ch:
+					for (int i = 0; i < OutCH; i++)
+					{
+						AXI_CAL buf = 0;
+
+						inference_ftr_h:
+						for (int ka = 0; ka < KerDim; ka++){
 #pragma HLS PIPELINE II=1
-							inference_cal_l4:
-                            for (int ka = 0; ka < KerDim; ka++){
-								inference_cal_l5:
-                                for (int kb = 0; kb < KerDim; kb++){
-                                    buf += (A[j][ia + ka][ib + kb] * B[i][j][ka][kb]) >> quant_scale;
+							inference_ftr_w:
+							for (int kb = 0; kb < KerDim; kb++){
+								inference_in_ch:
+								for (int j = 0; j < InCH; j++)
+								{
+                                	buf += A[ia + ka][ib + kb][j] * B[i][ka][kb][j];
                                 }
                             }
                         }
-                        relu_cal = (output_rectify) ? (MAX(0, buf)) : (buf);
-                        stream_out.write(relu_cal);
+
+						buf >>= reduce;
+						buf = (output_rectify) ? MAX(0, buf) : buf;
+						stream_out.write(buf);
                     }
                 }
             }
