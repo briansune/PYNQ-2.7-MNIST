@@ -1,6 +1,6 @@
 # PYNQ-2.7-MNIST
 
-## Compiled version is targeting XC7Z010-CLG484-1
+## Compiled version is targeting XC7Z010-CLG484
 
 ## MNIST Network
 ![MNIST Layers](image/mnist_layers.png)
@@ -18,7 +18,7 @@ Test accuracy: 96.73
 
 ### Vivado Resource usage
 
-> XC7Z010-CLG484-1
+> XC7Z010-CLG484
 
 | LUT    | 6415 | 17600 | 36.448864 |
 |--------|------|-------|-----------|
