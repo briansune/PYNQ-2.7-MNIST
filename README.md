@@ -1,6 +1,6 @@
 # PYNQ-2.7-MNIST
 
-## Compiled version is targeting XC7Z010-CLG484
+## Compiled version is targeting "Custom Board" XC7Z010-CLG484
 
 ## MNIST Network
 ![MNIST Layers](image/mnist_layers.png)
